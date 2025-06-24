@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿//#define BACKUP_SCREENSHOTS // Uncomment to enable backup screenshots
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
@@ -62,9 +63,11 @@ namespace ImageToInput
         public static readonly Color[] enemyPreparingAttack = GetAllPixels(new Bitmap("path/to/enemy preparing to attack.png"));
         public static readonly Color[] enemyDefending = GetAllPixels(new Bitmap("path/to/enemy defending.png"));
 
+#if BACKUP_SCREENSHOTS
         private static readonly string backupDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ProcessName);
         private static int backupID = 1; // Default value, will become the last backup ID + 1 if a backup exists
         private static Bitmap backupPreviousScreenshot = new(1, 1);
+#endif
 
         public static Bitmap CaptureDesktop()
         {
@@ -183,6 +186,7 @@ namespace ImageToInput
             Thread.Sleep(frameMs);
         }
 
+#if BACKUP_SCREENSHOTS
         private static void InitializeBackupVariables()
         {
             if (Directory.Exists(backupDirectory))
@@ -235,6 +239,7 @@ namespace ImageToInput
             backupPreviousScreenshot = screenshot;
             backupID++;
         }
+#endif
 
         public static void Heal(uint vJoyDeviceID)
         {
@@ -276,7 +281,9 @@ namespace ImageToInput
                 SetForegroundWindow(process.MainWindowHandle);
                 Thread.Sleep(200);
 
+#if BACKUP_SCREENSHOTS
                 InitializeBackupVariables();
+#endif
 
                 while (!process.HasExited)
                 {
@@ -295,7 +302,9 @@ namespace ImageToInput
         private static void MainLoop()
         {
             Bitmap screenshotBitmap = CaptureWindow(process.MainWindowHandle);
+#if BACKUP_SCREENSHOTS
             BackupScreenshot(screenshotBitmap);
+#endif
             Color[] screenshot = GetAllPixels(screenshotBitmap);
             if (ComparePixels(enemyPreparingAttack, screenshot, 5))
             {
